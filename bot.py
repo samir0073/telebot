@@ -15,7 +15,6 @@ def home():
     return "বট এখন অনলাইনে আছে এবং ডলার জেনারেট করছে! 🚀"
 
 def run():
-    # Render সাধারণত পোর্ট ৮০৮০ বা ৫০০০ ব্যবহার করে
     port = int(os.environ.get('PORT', 8080))
     server.run(host='0.0.0.0', port=port)
 
@@ -38,7 +37,6 @@ logging.basicConfig(
 MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
 SHRINKME_LINK = "https://shrinkme.click/3NcerfcW"
 DROPLINK_LINK = "https://droplink.co/0LN54k"
-# তোর প্রাইভেট চ্যানেলের ইনভাইট লিংক (এটি সরাসরি কাজ করবে)
 CHANNEL_URL = "https://t.me/+eOhwVR2ZXCowNDdl" 
 
 # /start কমান্ড হ্যান্ডলার
@@ -54,14 +52,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     )
 
-    # ২. প্রিমিয়াম স্বাগত মেসেজ (চ্যানেল লিংকসহ)
+    # ২. প্রিমিয়াম স্বাগত মেসেজ (টেক্সট লিংক রিমুভ করা হয়েছে)
     welcome_text = (
         f"✨ *স্বাগতম, {user_name}!* ✨\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "📥 *ভাইরাল ভিডিও ডাউনলোড সেন্টার*\n\n"
         "নিচের বাটন থেকে আপনার পছন্দের ভিডিও\n"
-        "সিলেক্ট করে লিংক সংগ্রহ করুন।\n\n"
-        f"📢 *অফিশিয়াল চ্যানেল:* [এখানে জয়েন করুন]({CHANNEL_URL})\n"
+        "সিলেক্ট করে লিংক সংগ্রহ করুন।\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনগুলো\n"
         "ব্যবহার করুন। সেরা অভিজ্ঞতার জন্য নিচের\n"
@@ -75,7 +72,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("🎬 ভিডিও ২ (4K)", callback_data='video_2')
         ],
         [InlineKeyboardButton("🔥 আজকের ভাইরাল ভিডিও", callback_data='video_3')],
-        # এখানে সরাসরি CHANNEL_URL (Invite Link) ব্যবহার করা হয়েছে
         [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url=CHANNEL_URL)] 
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -83,8 +79,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         welcome_text, 
         reply_markup=reply_markup, 
-        parse_mode='Markdown',
-        disable_web_page_preview=True # জাস্ট মেসেজ আসবে, চ্যানেলের বড় প্রিভিউ আসবে না
+        parse_mode='Markdown'
     )
 
 # বাটন ক্লিক হ্যান্ডলার
@@ -92,7 +87,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # মিক্সড শর্টনার লিংক
     links = {
         'video_1': SHRINKME_LINK,
         'video_2': DROPLINK_LINK,
@@ -108,7 +102,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response_text = (
             "✅ *আপনার ভিডিও লিংকটি রেডি!*\n\n"
             "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনে ক্লিক করুন। "
-            "অ্যাড পেজটি আসার পর কয়েক সেকেন্ড অপেক্ষা করে 'Continue' বা 'Get Link' বাটনে ক্লিক করুন।"
+            "অ্যাড পেজটি আসার পর কয়েক সেকেন্ড অপেক্ষা করে 'Continue' বা 'Get Link' বাটনে ক্লিক করুন।"
         )
         
         await query.message.reply_text(
@@ -118,16 +112,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 def main():
-    # Render-এর জন্য ডামি সার্ভার চালু করা
     keep_alive()
-
-    # টাইম-আউট সেটিংস
     request_config = HTTPXRequest(
         connect_timeout=40, 
         read_timeout=40
     )
 
-    # বট অ্যাপ্লিকেশন বিল্ড
     app = (
         Application.builder()
         .token(TOKEN)
@@ -135,13 +125,12 @@ def main():
         .build()
     )
 
-    # হ্যান্ডলার অ্যাড করা
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন চ্যানেল ব্যাকআপসহ ফুল প্রো মোডে চালু আছে ---")
+    print("--- বট এখন একদম ক্লিন মোডে চালু আছে ---")
     
-    # বট রান করা
+    # polling শুরু করার আগে পুরনো আপডেটগুলো ড্রপ করা যাতে ডাবল মেসেজ না আসে
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == '__main__':
