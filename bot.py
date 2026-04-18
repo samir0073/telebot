@@ -15,7 +15,7 @@ def home():
     return "বট এখন অনলাইনে আছে এবং ডলার জেনারেট করছে! 🚀"
 
 def run():
-    # Render সাধারণত পোর্ট ৮০৮০ বা ৫০০০ ব্যবহার করে, তবে ডাইনামিক পোর্ট নেওয়া ভালো
+    # Render সাধারণত পোর্ট ৮০৮০ বা ৫০০০ ব্যবহার করে
     server.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
 def keep_alive():
@@ -33,10 +33,11 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# তোর হোস্টিং করা মিনি অ্যাপ এবং শর্টনার লিংকগুলো
+# --- কনফিগারেশন ---
 MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
 SHRINKME_LINK = "https://shrinkme.click/3NcerfcW"
 DROPLINK_LINK = "https://droplink.co/0LN54k"
+CHANNEL_URL = "https://t.me/+eOhwVR2ZXCowNDdl" # তোর নতুন চ্যানেল লিংক
 
 # /start কমান্ড হ্যান্ডলার
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -51,34 +52,36 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     )
 
-    # ২. প্রিমিয়াম স্বাগত মেসেজ
+    # ২. প্রিমিয়াম স্বাগত মেসেজ (চ্যানেল লিংকসহ)
     welcome_text = (
         f"✨ *স্বাগতম, {user_name}!* ✨\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "📥 *ভাইরাল ভিডিও ডাউনলোড সেন্টার*\n\n"
         "নিচের বাটন থেকে আপনার পছন্দের ভিডিও\n"
-        "সিলেক্ট করে লিংক সংগ্রহ করুন।\n"
+        "সিলেক্ট করে লিংক সংগ্রহ করুন।\n\n"
+        f"📢 *অফিশিয়াল চ্যানেল:* [এখানে জয়েন করুন]({CHANNEL_URL})\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনগুলো\n"
         "ব্যবহার করুন। সেরা অভিজ্ঞতার জন্য নিচের\n"
         "বামের 'Watch Video' বাটনে ক্লিক করুন।"
     )
     
-    # বাটন গ্রিড (পাশাপাশি সাজানো)
+    # বাটন গ্রিড
     keyboard = [
         [
             InlineKeyboardButton("🎬 ভিডিও ১ (HD)", callback_data='video_1'),
             InlineKeyboardButton("🎬 ভিডিও ২ (4K)", callback_data='video_2')
         ],
         [InlineKeyboardButton("🔥 আজকের ভাইরাল ভিডিও", callback_data='video_3')],
-        [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url='https://t.me/viral_zone_bd')] 
+        [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url=CHANNEL_URL)] 
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
         welcome_text, 
         reply_markup=reply_markup, 
-        parse_mode='Markdown'
+        parse_mode='Markdown',
+        disable_web_page_preview=True # জাস্ট মেসেজ আসবে, চ্যানেলের বড় প্রিভিউ আসবে না
     )
 
 # বাটন ক্লিক হ্যান্ডলার
@@ -86,17 +89,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # মিক্সড শর্টনার লিংক যাতে ইনকাম ডাইভারসিফাই হয়
+    # মিক্সড শর্টনার লিংক
     links = {
-        'video_1': SHRINKME_LINK, # ShrinkMe লিংক
-        'video_2': DROPLINK_LINK, # Droplink লিংক
-        'video_3': DROPLINK_LINK  # Droplink লিংক
+        'video_1': SHRINKME_LINK,
+        'video_2': DROPLINK_LINK,
+        'video_3': DROPLINK_LINK 
     }
 
     selected_link = links.get(query.data)
     
     if selected_link:
-        # ভিডিও ওপেন করার জন্য বাটন
         keyboard = [[InlineKeyboardButton("🌐 ভিডিওটি ওপেন করুন", url=selected_link)]]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -134,7 +136,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন ডাবল-শর্টনার ইনকাম মোডে চালু আছে ---")
+    print("--- বট এখন চ্যানেল ব্যাকআপসহ ফুল প্রো মোডে চালু আছে ---")
     
     # বট রান করা
     app.run_polling(drop_pending_updates=True)
