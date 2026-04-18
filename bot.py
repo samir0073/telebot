@@ -12,10 +12,10 @@ server = Flask('')
 
 @server.route('/')
 def home():
-    return "বট এখন অনলাইনে আছে! 🚀"
+    return "বট এখন অনলাইনে আছে এবং ডলার জেনারেট করছে! 🚀"
 
 def run():
-    # Render সাধারণত পোর্ট ৮০৮০ বা ৫০০০ ব্যবহার করে
+    # Render সাধারণত পোর্ট ৮০৮০ বা ৫০০০ ব্যবহার করে, তবে ডাইনামিক পোর্ট নেওয়া ভালো
     server.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
 def keep_alive():
@@ -33,10 +33,10 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# তোর হোস্টিং করা মিনি অ্যাপ এবং ShrinkMe লিংক
+# তোর হোস্টিং করা মিনি অ্যাপ এবং শর্টনার লিংকগুলো
 MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
-# তোর দেওয়া ShrinkMe স্মার্টলিংক
 SHRINKME_LINK = "https://shrinkme.click/3NcerfcW"
+DROPLINK_LINK = "https://droplink.co/0LN54k"
 
 # /start কমান্ড হ্যান্ডলার
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -86,11 +86,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # এখন ভিডিও বাটনগুলোতে ShrinkMe এর লিংক দেওয়া হয়েছে
+    # মিক্সড শর্টনার লিংক যাতে ইনকাম ডাইভারসিফাই হয়
     links = {
-        'video_1': SHRINKME_LINK,
-        'video_2': SHRINKME_LINK,
-        'video_3': SHRINKME_LINK
+        'video_1': SHRINKME_LINK, # ShrinkMe লিংক
+        'video_2': DROPLINK_LINK, # Droplink লিংক
+        'video_3': DROPLINK_LINK  # Droplink লিংক
     }
 
     selected_link = links.get(query.data)
@@ -103,7 +103,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response_text = (
             "✅ *আপনার ভিডিও লিংকটি রেডি!*\n\n"
             "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনে ক্লিক করুন। "
-            "লিংকটি ওপেন হওয়ার পর ১০ সেকেন্ড অপেক্ষা করে 'Get Link' বাটনে ক্লিক করুন।"
+            "অ্যাড পেজটি আসার পর কয়েক সেকেন্ড অপেক্ষা করে 'Continue' বা 'Get Link' বাটনে ক্লিক করুন।"
         )
         
         await query.message.reply_text(
@@ -134,7 +134,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন হাই-ইনকাম মোডে চালু আছে ---")
+    print("--- বট এখন ডাবল-শর্টনার ইনকাম মোডে চালু আছে ---")
     
     # বট রান করা
     app.run_polling(drop_pending_updates=True)
