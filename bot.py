@@ -33,9 +33,10 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# তোর হোস্টিং করা মিনি অ্যাপ এবং স্মার্টলিংক
+# তোর হোস্টিং করা মিনি অ্যাপ এবং ShrinkMe লিংক
 MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
-ADSTERRA_LINK = "https://www.profitablecpmratenetwork.com/gpwvau0su?key=ae6de91dc812e06c58974e2e5b3b9581"
+# তোর দেওয়া ShrinkMe স্মার্টলিংক
+SHRINKME_LINK = "https://shrinkme.click/3NcerfcW"
 
 # /start কমান্ড হ্যান্ডলার
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -70,7 +71,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("🎬 ভিডিও ২ (4K)", callback_data='video_2')
         ],
         [InlineKeyboardButton("🔥 আজকের ভাইরাল ভিডিও", callback_data='video_3')],
-        [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url='https://t.me/viral_zone_bd')] # এখানে তোর চ্যানেলের ইউজারনেম দিতে পারিস
+        [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url='https://t.me/viral_zone_bd')] 
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -85,24 +86,24 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # এখানে তোর Adsterra স্মার্টলিংক সেট করা হলো
+    # এখন ভিডিও বাটনগুলোতে ShrinkMe এর লিংক দেওয়া হয়েছে
     links = {
-        'video_1': ADSTERRA_LINK,
-        'video_2': ADSTERRA_LINK,
-        'video_3': ADSTERRA_LINK
+        'video_1': SHRINKME_LINK,
+        'video_2': SHRINKME_LINK,
+        'video_3': SHRINKME_LINK
     }
 
     selected_link = links.get(query.data)
     
     if selected_link:
-        # সরাসরি ওপেন করার জন্য ইনলাইন বাটন
+        # ভিডিও ওপেন করার জন্য বাটন
         keyboard = [[InlineKeyboardButton("🌐 ভিডিওটি ওপেন করুন", url=selected_link)]]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         response_text = (
-            "✅ *আপনার লিংকটি তৈরি হয়ে গেছে!*\n\n"
+            "✅ *আপনার ভিডিও লিংকটি রেডি!*\n\n"
             "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনে ক্লিক করুন। "
-            "অ্যাডটি ৫ সেকেন্ড লোড হতে পারে, ধৈর্য ধরুন।"
+            "লিংকটি ওপেন হওয়ার পর ১০ সেকেন্ড অপেক্ষা করে 'Get Link' বাটনে ক্লিক করুন।"
         )
         
         await query.message.reply_text(
@@ -133,7 +134,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন ফুল প্রিমিয়াম ইনকাম মোডে চালু আছে ---")
+    print("--- বট এখন হাই-ইনকাম মোডে চালু আছে ---")
     
     # বট রান করা
     app.run_polling(drop_pending_updates=True)
