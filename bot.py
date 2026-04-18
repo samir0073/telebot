@@ -52,7 +52,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     )
 
-    # ২. প্রিমিয়াম স্বাগত মেসেজ (টেক্সট লিংক রিমুভ করা হয়েছে)
+    # ২. প্রিমিয়াম স্বাগত মেসেজ (এখানে অফিশিয়াল চ্যানেলের টেক্সট লাইনটি রিমুভ করা হয়েছে)
     welcome_text = (
         f"✨ *স্বাগতম, {user_name}!* ✨\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
@@ -128,7 +128,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন একদম ক্লিন মোডে চালু আছে ---")
+    print("--- বট এখন ক্লিন মোডে চালু আছে ---")
     
     # polling শুরু করার আগে পুরনো আপডেটগুলো ড্রপ করা যাতে ডাবল মেসেজ না আসে
     app.run_polling(drop_pending_updates=True)
