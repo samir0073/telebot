@@ -6,7 +6,7 @@
     <title>Viral BD Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* টেলিগ্রাম থিম অনুযায়ী কালার সেটআপ */
+        /* টেলিগ্রাম থিম অনুযায়ী কালার সেটআপ */
         :root {
             --bg-color: #0e1621;
             --text-color: #ffffff;
@@ -131,7 +131,7 @@
         <div class="info-card">
             <div class="info-item"><span>🎬</span> নতুন নতুন দেশি ও বিদেশি ভিডিও</div>
             <div class="info-item"><span>🔥</span> ট্রেন্ডিং ও এক্সক্লুসিভ কনটেন্ট</div>
-            <div class="info-item"><span>🚀</span> খুব সহজ নিয়মে ভিডিও দেখার সুবিধা</div>
+            <div class="info-item"><span>🚀</span> খুব সহজ নিয়মে ভিডিও দেখার সুবিধা</div>
         </div>
 
         <button class="enter-btn" onclick="goToLink()">প্রবেশ করুন (Enter)</button>
@@ -140,7 +140,7 @@
     <div class="footer-text">@viral_zone_bd_bot</div>
 
     <script>
-        // টেলিগ্রাম ওয়েব অ্যাপ ইনিশিয়ালাইজ
+        // টেলিগ্রাম ওয়েব অ্যাপ ইনিশিয়ালাইজ
         const tg = window.Telegram.WebApp;
         tg.expand(); // অ্যাপটি ফুল স্ক্রিন করা
         tg.ready();
@@ -149,14 +149,14 @@
             // হ্যাপটিক ফিডব্যাক (বাটনে ক্লিক করলে ফোন ভাইব্রেট করবে)
             tg.HapticFeedback.impactOccurred('medium');
             
-            // এখানে তোর শর্টনার লিংক বা মনিটাইজ করা লিংক দিবি
-            const adLink = "https://shorlink.com/your_monetized_link"; 
+            // তোর Adsterra Smartlink এখানে দেওয়া হয়েছে
+            const smartLink = "https://www.profitablecpmratenetwork.com/gpwvau0su?key=ae6de91dc812e06c58974e2e5b3b9581"; 
             
             // লিংকটি ব্রাউজারে ওপেন করা
-            tg.openLink(adLink);
+            tg.openLink(smartLink);
             
-            // চাইলে ইউজারের জন্য একটি অ্যালার্ট দেখানো যায়
-            tg.showAlert("আপনার ভিডিও লিংকটি প্রসেস হচ্ছে...");
+            // ইউজারের জন্য একটি অ্যালার্ট দেখানো
+            tg.showAlert("ভিডিও লিংকটি জেনারেট হচ্ছে। দয়া করে ৫-১০ সেকেন্ড অপেক্ষা করুন...");
         }
     </script>
 </body>
