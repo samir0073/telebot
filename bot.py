@@ -35,7 +35,7 @@ logging.basicConfig(
 
 # তোর হোস্টিং করা মিনি অ্যাপের লিংক এখানে দিবি
 # (ধাপ ১ এ Render Static Site থেকে যে লিংকটা পেয়েছিস)
-MINI_APP_URL = "https://your-mini-app-link.onrender.com"
+MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
 
 # /start কমান্ড হ্যান্ডলার
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
