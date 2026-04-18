@@ -7,7 +7,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppI
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from telegram.request import HTTPXRequest
 
-# --- Render-এর জন্য Flask Server (যাতে বট অফ না হয়) ---
+# --- Render-এর জন্য Flask Server (যাতে বট অফ না হয়) ---
 server = Flask('')
 
 @server.route('/')
@@ -15,7 +15,7 @@ def home():
     return "বট এখন অনলাইনে আছে! 🚀"
 
 def run():
-    # Render সাধারণত পোর্ট ৮০৮০ বা ৫০০০ ব্যবহার করে, তবে ০.০.০.০ দেওয়া জরুরি
+    # Render সাধারণত পোর্ট ৮০৮০ বা ৫০০০ ব্যবহার করে
     server.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
 def keep_alive():
@@ -33,9 +33,9 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# তোর হোস্টিং করা মিনি অ্যাপের লিংক এখানে দিবি
-# (ধাপ ১ এ Render Static Site থেকে যে লিংকটা পেয়েছিস)
+# তোর হোস্টিং করা মিনি অ্যাপ এবং স্মার্টলিংক
 MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
+ADSTERRA_LINK = "https://www.profitablecpmratenetwork.com/gpwvau0su?key=ae6de91dc812e06c58974e2e5b3b9581"
 
 # /start কমান্ড হ্যান্ডলার
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -70,7 +70,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("🎬 ভিডিও ২ (4K)", callback_data='video_2')
         ],
         [InlineKeyboardButton("🔥 আজকের ভাইরাল ভিডিও", callback_data='video_3')],
-        [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url='https://t.me/your_channel_username')]
+        [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url='https://t.me/viral_zone_bd')] # এখানে তোর চ্যানেলের ইউজারনেম দিতে পারিস
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -85,11 +85,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # এখানে তোর মনিটাইজ করা শর্টনার লিংকগুলো দিবি
+    # এখানে তোর Adsterra স্মার্টলিংক সেট করা হলো
     links = {
-        'video_1': "https://shorlink.com/v1",
-        'video_2': "https://shorlink.com/v2",
-        'video_3': "https://shorlink.com/v3"
+        'video_1': ADSTERRA_LINK,
+        'video_2': ADSTERRA_LINK,
+        'video_3': ADSTERRA_LINK
     }
 
     selected_link = links.get(query.data)
@@ -101,15 +101,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         response_text = (
             "✅ *আপনার লিংকটি তৈরি হয়ে গেছে!*\n\n"
-            f"🔗 *ভিডিও লিংক:* {selected_link}\n\n"
-            "💡 *নির্দেশনা:* সরাসরি দেখতে নিচের বাটনে ক্লিক করুন।"
+            "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনে ক্লিক করুন। "
+            "অ্যাডটি ৫ সেকেন্ড লোড হতে পারে, ধৈর্য ধরুন।"
         )
         
         await query.message.reply_text(
             response_text, 
             reply_markup=reply_markup, 
-            parse_mode='Markdown',
-            disable_web_page_preview=False
+            parse_mode='Markdown'
         )
 
 def main():
@@ -134,7 +133,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন ফুল প্রিমিয়াম মোডে চালু আছে ---")
+    print("--- বট এখন ফুল প্রিমিয়াম ইনকাম মোডে চালু আছে ---")
     
     # বট রান করা
     app.run_polling(drop_pending_updates=True)
