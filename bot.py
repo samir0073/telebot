@@ -35,8 +35,8 @@ logging.basicConfig(
 
 # --- কনফিগারেশন ---
 MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
-SHRINKME_LINK = "https://shrinkme.click/3NcerfcW"
-DROPLINK_LINK = "https://droplink.co/0LN54k"
+SHRINKME_LINK = "https://shrinkme.click/pPKp"
+DROPLINK_LINK = "https://droplink.co/x3Azu"
 CHANNEL_URL = "https://t.me/+eOhwVR2ZXCowNDdl" 
 
 # /start কমান্ড হ্যান্ডলার
