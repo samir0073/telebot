@@ -7,7 +7,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppI
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from telegram.request import HTTPXRequest
 
-# --- Render-এর জন্য Flask Server (যাতে বট অফ না হয়) ---
+# --- Render-এর জন্য Flask Server ---
 server = Flask('')
 
 @server.route('/')
@@ -16,7 +16,8 @@ def home():
 
 def run():
     # Render সাধারণত পোর্ট ৮০৮০ বা ৫০০০ ব্যবহার করে
-    server.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    port = int(os.environ.get('PORT', 8080))
+    server.run(host='0.0.0.0', port=port)
 
 def keep_alive():
     t = Thread(target=run)
@@ -37,7 +38,8 @@ logging.basicConfig(
 MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
 SHRINKME_LINK = "https://shrinkme.click/3NcerfcW"
 DROPLINK_LINK = "https://droplink.co/0LN54k"
-CHANNEL_URL = "https://t.me/+eOhwVR2ZXCowNDdl" # তোর নতুন চ্যানেল লিংক
+# তোর প্রাইভেট চ্যানেলের ইনভাইট লিংক (এটি সরাসরি কাজ করবে)
+CHANNEL_URL = "https://t.me/+eOhwVR2ZXCowNDdl" 
 
 # /start কমান্ড হ্যান্ডলার
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -59,7 +61,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📥 *ভাইরাল ভিডিও ডাউনলোড সেন্টার*\n\n"
         "নিচের বাটন থেকে আপনার পছন্দের ভিডিও\n"
         "সিলেক্ট করে লিংক সংগ্রহ করুন।\n\n"
-        f"📢 *অফিশিয়াল চ্যানেল:* [এখানে জয়েন করুন]({CHANNEL_URL})\n"
+        f"📢 *অফিশিয়াল চ্যানেল:* [এখানে জয়েন করুন]({CHANNEL_URL})\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনগুলো\n"
         "ব্যবহার করুন। সেরা অভিজ্ঞতার জন্য নিচের\n"
@@ -73,6 +75,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("🎬 ভিডিও ২ (4K)", callback_data='video_2')
         ],
         [InlineKeyboardButton("🔥 আজকের ভাইরাল ভিডিও", callback_data='video_3')],
+        # এখানে সরাসরি CHANNEL_URL (Invite Link) ব্যবহার করা হয়েছে
         [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url=CHANNEL_URL)] 
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -81,7 +84,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         welcome_text, 
         reply_markup=reply_markup, 
         parse_mode='Markdown',
-        disable_web_page_preview=True # জাস্ট মেসেজ আসবে, চ্যানেলের বড় প্রিভিউ আসবে না
+        disable_web_page_preview=True # জাস্ট মেসেজ আসবে, চ্যানেলের বড় প্রিভিউ আসবে না
     )
 
 # বাটন ক্লিক হ্যান্ডলার
@@ -105,7 +108,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response_text = (
             "✅ *আপনার ভিডিও লিংকটি রেডি!*\n\n"
             "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনে ক্লিক করুন। "
-            "অ্যাড পেজটি আসার পর কয়েক সেকেন্ড অপেক্ষা করে 'Continue' বা 'Get Link' বাটনে ক্লিক করুন।"
+            "অ্যাড পেজটি আসার পর কয়েক সেকেন্ড অপেক্ষা করে 'Continue' বা 'Get Link' বাটনে ক্লিক করুন।"
         )
         
         await query.message.reply_text(
