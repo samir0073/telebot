@@ -7,12 +7,33 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppI
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from telegram.request import HTTPXRequest
 
-# --- Render-এর জন্য Flask Server ---
+# ===================================================
+# 🚀 LINK SETTINGS (এখানে তোর সব লিংক পরিবর্তন করবি)
+# ===================================================
+
+# ১. ভিডিও ১ (HD) এর লিংক এখানে বসা:
+VIDEO_1_HD = "https://shrinkme.click/pPKp"
+
+# ২. ভিডিও ২ (4K) এর লিংক এখানে বসা:
+VIDEO_2_4K = "https://droplink.co/x3Azu"
+
+# ৩. 🔥 আজকের ভাইরাল ভিডিও এর লিংক এখানে বসা:
+DAILY_VIRAL_VIDEO = "https://droplink.co/x3Azu"
+
+# 📢 আমাদের অফিশিয়াল চ্যানেল ইনভাইট লিংক:
+CHANNEL_URL = "https://t.me/+eOhwVR2ZXCowNDdl"
+
+# 📱 মিনি অ্যাপ লিংক (Adsterra Ads):
+MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
+
+# ===================================================
+
+# --- Render-এর জন্য Flask Server (বট সচল রাখার জন্য) ---
 server = Flask('')
 
 @server.route('/')
 def home():
-    return "বট এখন অনলাইনে আছে এবং ডলার জেনারেট করছে! 🚀"
+    return "বট অনলাইনে আছে এবং ডলার জেনারেট করছে! 🚀"
 
 def run():
     port = int(os.environ.get('PORT', 8080))
@@ -21,7 +42,6 @@ def run():
 def keep_alive():
     t = Thread(target=run)
     t.start()
-# ---------------------------------------------------
 
 # .env ফাইল থেকে টোকেন লোড করা
 load_dotenv()
@@ -32,12 +52,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
     level=logging.INFO
 )
-
-# --- কনফিগারেশন ---
-MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
-SHRINKME_LINK = "https://shrinkme.click/pPKp"
-DROPLINK_LINK = "https://droplink.co/x3Azu"
-CHANNEL_URL = "https://t.me/+eOhwVR2ZXCowNDdl" 
 
 # /start কমান্ড হ্যান্ডলার
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -52,7 +66,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     )
 
-    # ২. প্রিমিয়াম স্বাগত মেসেজ (এখানে অফিশিয়াল চ্যানেলের টেক্সট লাইনটি রিমুভ করা হয়েছে)
+    # ২. প্রিমিয়াম স্বাগত মেসেজ
     welcome_text = (
         f"✨ *স্বাগতম, {user_name}!* ✨\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
@@ -65,7 +79,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "বামের 'Watch Video' বাটনে ক্লিক করুন।"
     )
     
-    # বাটন গ্রিড
+    # বাটন গ্রিড (উপরে যে লিংকগুলো সেট করেছিস সেগুলো এখানে কাজ করবে)
     keyboard = [
         [
             InlineKeyboardButton("🎬 ভিডিও ১ (HD)", callback_data='video_1'),
@@ -87,10 +101,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
+    # ডাটা অনুযায়ী সঠিক লিংকটি বেছে নেওয়া
     links = {
-        'video_1': SHRINKME_LINK,
-        'video_2': DROPLINK_LINK,
-        'video_3': DROPLINK_LINK 
+        'video_1': VIDEO_1_HD,
+        'video_2': VIDEO_2_4K,
+        'video_3': DAILY_VIRAL_VIDEO 
     }
 
     selected_link = links.get(query.data)
@@ -112,7 +127,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 def main():
+    # ডামি সার্ভার চালু রাখা
     keep_alive()
+
+    # টাইম-আউট কনফিগারেশন
     request_config = HTTPXRequest(
         connect_timeout=40, 
         read_timeout=40
@@ -125,12 +143,13 @@ def main():
         .build()
     )
 
+    # কমান্ড এবং বাটন হ্যান্ডলার সেটআপ
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন ক্লিন মোডে চালু আছে ---")
+    print("--- বট এখন ক্লিন এবং অর্গানাইজড মোডে চালু আছে ---")
     
-    # polling শুরু করার আগে পুরনো আপডেটগুলো ড্রপ করা যাতে ডাবল মেসেজ না আসে
+    # পুরনো আপডেট ড্রপ করে পোলিং শুরু করা (যাতে ডাবল মেসেজ না আসে)
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == '__main__':
