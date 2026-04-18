@@ -1,9 +1,27 @@
 import os
 import logging
+from flask import Flask
+from threading import Thread
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, MenuButtonWebApp
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from telegram.request import HTTPXRequest
+
+# --- Render-এর জন্য Flask Server (যাতে বট অফ না হয়) ---
+server = Flask('')
+
+@server.route('/')
+def home():
+    return "বট এখন অনলাইনে আছে! 🚀"
+
+def run():
+    # Render সাধারণত পোর্ট ৮০৮০ বা ৫০০০ ব্যবহার করে, তবে ০.০.০.০ দেওয়া জরুরি
+    server.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+# ---------------------------------------------------
 
 # .env ফাইল থেকে টোকেন লোড করা
 load_dotenv()
@@ -16,7 +34,7 @@ logging.basicConfig(
 )
 
 # তোর হোস্টিং করা মিনি অ্যাপের লিংক এখানে দিবি
-# (Vercel বা Render থেকে যে লিংকটা পেয়েছিস)
+# (ধাপ ১ এ Render Static Site থেকে যে লিংকটা পেয়েছিস)
 MINI_APP_URL = "https://your-mini-app-link.onrender.com"
 
 # /start কমান্ড হ্যান্ডলার
@@ -32,7 +50,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     )
 
-    # ২. প্রিমিয়াম স্বাগত মেসেজ
+    # ২. প্রিমিয়াম স্বাগত মেসেজ
     welcome_text = (
         f"✨ *স্বাগতম, {user_name}!* ✨\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
@@ -52,7 +70,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("🎬 ভিডিও ২ (4K)", callback_data='video_2')
         ],
         [InlineKeyboardButton("🔥 আজকের ভাইরাল ভিডিও", callback_data='video_3')],
-        [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url='https://t.me/your_channel_username')]
+        [InlineKeyboardButton("📢 আমাদের অফিশিয়াল চ্যানেল", url='https://t.me/your_channel_username')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -82,7 +100,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         response_text = (
-            "✅ *আপনার লিংকটি তৈরি হয়ে গেছে!*\n\n"
+            "✅ *আপনার লিংকটি তৈরি হয়ে গেছে!*\n\n"
             f"🔗 *ভিডিও লিংক:* {selected_link}\n\n"
             "💡 *নির্দেশনা:* সরাসরি দেখতে নিচের বাটনে ক্লিক করুন।"
         )
@@ -95,7 +113,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 def main():
-    # টাইম-আউট সেটিংস (ইন্টারনেট সমস্যার সমাধান)
+    # Render-এর জন্য ডামি সার্ভার চালু করা
+    keep_alive()
+
+    # টাইম-আউট সেটিংস
     request_config = HTTPXRequest(
         connect_timeout=40, 
         read_timeout=40
@@ -113,8 +134,9 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন ফুল প্রিমিয়াম মোডে চালু আছে ---")
+    print("--- বট এখন ফুল প্রিমিয়াম মোডে চালু আছে ---")
     
+    # বট রান করা
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == '__main__':
