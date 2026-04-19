@@ -8,16 +8,19 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 from telegram.request import HTTPXRequest
 
 # ===================================================
-# 🚀 LINK SETTINGS (এখানে তোর সব লিংক পরিবর্তন করবি)
+# 🚀 LINK & ADMIN SETTINGS (সবকিছু এখানে গুছিয়ে দেওয়া আছে)
 # ===================================================
 
-# ১. ভিডিও ১ (HD) এর লিংক এখানে বসা:
+# তোর নিজের টেলিগ্রাম আইডি (অ্যাডমিন প্যানেল এক্সেস করার জন্য)
+ADMIN_ID = 7657544184 
+
+# ১. ভিডিও ১ (HD) এর লিংক:
 VIDEO_1_HD = "https://shrinkme.click/pPKp"
 
-# ২. ভিডিও ২ (4K) এর লিংক এখানে বসা:
+# ২. ভিডিও ২ (4K) এর লিংক:
 VIDEO_2_4K = "https://droplink.co/x3Azu"
 
-# ৩. 🔥 আজকের ভাইরাল ভিডিও এর লিংক এখানে বসা:
+# ৩. 🔥 আজকের ভাইরাল ভিডিও এর লিংক:
 DAILY_VIRAL_VIDEO = "https://droplink.co/x3Azu"
 
 # 📢 আমাদের অফিশিয়াল চ্যানেল ইনভাইট লিংক:
@@ -26,9 +29,11 @@ CHANNEL_URL = "https://t.me/+eOhwVR2ZXCowNDdl"
 # 📱 মিনি অ্যাপ লিংক (Adsterra Ads):
 MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
 
+# ইউজার ডাটাবেস ফাইল (ব্রডকাস্টের জন্য আইডি সেভ থাকবে)
+USER_FILE = "users.txt"
 # ===================================================
 
-# --- Render-এর জন্য Flask Server (বট সচল রাখার জন্য) ---
+# --- Render-এর জন্য Flask Server ---
 server = Flask('')
 
 @server.route('/')
@@ -53,8 +58,24 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# /start কমান্ড হ্যান্ডলার
+# --- ইউজার আইডি সেভ করার ফাংশন ---
+def save_user(user_id):
+    if not os.path.exists(USER_FILE):
+        open(USER_FILE, 'w').close()
+    
+    with open(USER_FILE, 'r') as f:
+        users = f.read().splitlines()
+    
+    if str(user_id) not in users:
+        with open(USER_FILE, 'a') as f:
+            f.write(str(user_id) + "\n")
+
+# --- /start কমান্ড হ্যান্ডলার ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # ব্রডকাস্টের জন্য ইউজার আইডি সেভ করা হচ্ছে
+    user_id = update.effective_user.id
+    save_user(user_id)
+    
     user_name = update.effective_user.first_name
     
     # ১. বাম পাশের নিচে 'Watch Video' মেনু বাটন সেট করা
@@ -79,7 +100,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "বামের 'Watch Video' বাটনে ক্লিক করুন।"
     )
     
-    # বাটন গ্রিড (উপরে যে লিংকগুলো সেট করেছিস সেগুলো এখানে কাজ করবে)
+    # বাটন গ্রিড
     keyboard = [
         [
             InlineKeyboardButton("🎬 ভিডিও ১ (HD)", callback_data='video_1'),
@@ -96,12 +117,50 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown'
     )
 
-# বাটন ক্লিক হ্যান্ডলার
+# --- ব্রডকাস্ট কমান্ড (শুধুমাত্র তোর জন্য) ---
+async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # অ্যাডমিন ভেরিফিকেশন
+    if update.effective_user.id != ADMIN_ID:
+        await update.message.reply_text("❌ দুঃখিত, এই কমান্ডটি শুধুমাত্র অ্যাডমিনের জন্য।")
+        return
+
+    if not context.args:
+        await update.message.reply_text("⚠️ মেসেজটি লিখুন। উদাহরণ: `/broadcast আজ নতুন ভিডিও আসছে!`")
+        return
+
+    message_to_send = " ".join(context.args)
+    
+    if not os.path.exists(USER_FILE):
+        await update.message.reply_text("❌ কোনো ইউজার খুঁজে পাওয়া যায়নি!")
+        return
+
+    with open(USER_FILE, 'r') as f:
+        users = f.read().splitlines()
+
+    success = 0
+    fail = 0
+    
+    status_msg = await update.message.reply_text(f"📢 {len(users)} জন ইউজারের কাছে পাঠানো শুরু হচ্ছে...")
+
+    for user in users:
+        try:
+            await context.bot.send_message(
+                chat_id=int(user), 
+                text=f"📢 *অফিশিয়াল ঘোষণা:*\n\n{message_to_send}", 
+                parse_mode='Markdown'
+            )
+            success += 1
+        except Exception:
+            fail += 1
+
+    await status_msg.edit_text(f"✅ পাঠানো শেষ!\n🎯 সফল: {success}\n❌ ব্যর্থ: {fail} (বট ব্লক করেছে)")
+
+# --- বাটন ক্লিক হ্যান্ডলার ---
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # ডাটা অনুযায়ী সঠিক লিংকটি বেছে নেওয়া
+    # ডাটা অনুযায়ী সঠিক লিংকটি বেছে নেওয়া
     links = {
         'video_1': VIDEO_1_HD,
         'video_2': VIDEO_2_4K,
@@ -143,13 +202,14 @@ def main():
         .build()
     )
 
-    # কমান্ড এবং বাটন হ্যান্ডলার সেটআপ
+    # হ্যান্ডলার সেটআপ
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("broadcast", broadcast)) # ব্রডকাস্ট যোগ করা হয়েছে
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন ক্লিন এবং অর্গানাইজড মোডে চালু আছে ---")
+    print("--- বট এখন অ্যাডমিন প্যানেল এবং ক্লিন মোডে চালু আছে ---")
     
-    # পুরনো আপডেট ড্রপ করে পোলিং শুরু করা (যাতে ডাবল মেসেজ না আসে)
+    # পোলিং শুরু
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == '__main__':
