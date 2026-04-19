@@ -3,15 +3,16 @@ import logging
 from flask import Flask
 from threading import Thread
 from dotenv import load_dotenv
+from pymongo import MongoClient  # MongoDB লাইব্রেরি
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, MenuButtonWebApp
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from telegram.request import HTTPXRequest
 
 # ===================================================
-# 🚀 LINK & ADMIN SETTINGS (সবকিছু এখানে গুছিয়ে দেওয়া আছে)
+# 🚀 LINK & ADMIN SETTINGS (সবকিছু এখানে ঠিক আছে)
 # ===================================================
 
-# তোর নিজের টেলিগ্রাম আইডি (অ্যাডমিন প্যানেল এক্সেস করার জন্য)
+# তোর নিজের টেলিগ্রাম আইডি
 ADMIN_ID = 7657544184 
 
 # ১. ভিডিও ১ (HD) এর লিংক:
@@ -29,8 +30,18 @@ CHANNEL_URL = "https://t.me/+eOhwVR2ZXCowNDdl"
 # 📱 মিনি অ্যাপ লিংক (Adsterra Ads):
 MINI_APP_URL = "https://telebot-app-rwxv.onrender.com"
 
-# ইউজার ডাটাবেস ফাইল (ব্রডকাস্টের জন্য আইডি সেভ থাকবে)
-USER_FILE = "users.txt"
+# ===================================================
+# 🗄️ DATABASE SETTINGS (MongoDB)
+# ===================================================
+load_dotenv()
+TOKEN = os.getenv("BOT_TOKEN")
+MONGO_URI = os.getenv("MONGO_URI")
+
+# MongoDB কানেকশন
+client = MongoClient(MONGO_URI)
+db = client['viral_bot_db']
+users_collection = db['users']
+
 # ===================================================
 
 # --- Render-এর জন্য Flask Server ---
@@ -38,7 +49,7 @@ server = Flask('')
 
 @server.route('/')
 def home():
-    return "বট অনলাইনে আছে এবং ডলার জেনারেট করছে! 🚀"
+    return "বট অনলাইনে আছে এবং ডেটাবেস কানেক্টেড! 🚀"
 
 def run():
     port = int(os.environ.get('PORT', 8080))
@@ -48,35 +59,28 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
-# .env ফাইল থেকে টোকেন লোড করা
-load_dotenv()
-TOKEN = os.getenv("BOT_TOKEN")
-
 # লগিং সেটআপ
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
     level=logging.INFO
 )
 
-# --- ইউজার আইডি সেভ করার ফাংশন ---
-def save_user(user_id):
-    if not os.path.exists(USER_FILE):
-        open(USER_FILE, 'w').close()
-    
-    with open(USER_FILE, 'r') as f:
-        users = f.read().splitlines()
-    
-    if str(user_id) not in users:
-        with open(USER_FILE, 'a') as f:
-            f.write(str(user_id) + "\n")
+# --- ইউজার আইডি সেভ করার ফাংশন (MongoDB ভার্সন) ---
+def save_user(user_id, first_name):
+    # ইউজার যদি আগে থেকে না থাকে তবেই নতুন করে সেভ হবে
+    users_collection.update_one(
+        {"user_id": user_id},
+        {"$set": {"user_id": user_id, "first_name": first_name}},
+        upsert=True
+    )
 
 # --- /start কমান্ড হ্যান্ডলার ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # ব্রডকাস্টের জন্য ইউজার আইডি সেভ করা হচ্ছে
-    user_id = update.effective_user.id
-    save_user(user_id)
+    # ব্রডকাস্টের জন্য ইউজার ডাটাবেসে সেভ করা হচ্ছে
+    user = update.effective_user
+    save_user(user.id, user.first_name)
     
-    user_name = update.effective_user.first_name
+    user_name = user.first_name
     
     # ১. বাম পাশের নিচে 'Watch Video' মেনু বাটন সেট করা
     await context.bot.set_chat_menu_button(
@@ -100,7 +104,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "বামের 'Watch Video' বাটনে ক্লিক করুন।"
     )
     
-    # বাটন গ্রিড
     keyboard = [
         [
             InlineKeyboardButton("🎬 ভিডিও ১ (HD)", callback_data='video_1'),
@@ -117,9 +120,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown'
     )
 
-# --- ব্রডকাস্ট কমান্ড (শুধুমাত্র তোর জন্য) ---
+# --- ব্রডকাস্ট কমান্ড (MongoDB থেকে আইডি নিয়ে) ---
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # অ্যাডমিন ভেরিফিকেশন
     if update.effective_user.id != ADMIN_ID:
         await update.message.reply_text("❌ দুঃখিত, এই কমান্ডটি শুধুমাত্র অ্যাডমিনের জন্য।")
         return
@@ -130,22 +132,22 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     message_to_send = " ".join(context.args)
     
-    if not os.path.exists(USER_FILE):
+    # ডাটাবেস থেকে সব ইউজার খুঁজে বের করা
+    all_users = list(users_collection.find({}))
+    
+    if not all_users:
         await update.message.reply_text("❌ কোনো ইউজার খুঁজে পাওয়া যায়নি!")
         return
-
-    with open(USER_FILE, 'r') as f:
-        users = f.read().splitlines()
 
     success = 0
     fail = 0
     
-    status_msg = await update.message.reply_text(f"📢 {len(users)} জন ইউজারের কাছে পাঠানো শুরু হচ্ছে...")
+    status_msg = await update.message.reply_text(f"📢 {len(all_users)} জন ইউজারের কাছে পাঠানো শুরু হচ্ছে...")
 
-    for user in users:
+    for user_doc in all_users:
         try:
             await context.bot.send_message(
-                chat_id=int(user), 
+                chat_id=user_doc['user_id'], 
                 text=f"📢 *অফিশিয়াল ঘোষণা:*\n\n{message_to_send}", 
                 parse_mode='Markdown'
             )
@@ -160,7 +162,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # ডাটা অনুযায়ী সঠিক লিংকটি বেছে নেওয়া
     links = {
         'video_1': VIDEO_1_HD,
         'video_2': VIDEO_2_4K,
@@ -186,10 +187,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 def main():
-    # ডামি সার্ভার চালু রাখা
     keep_alive()
 
-    # টাইম-আউট কনফিগারেশন
     request_config = HTTPXRequest(
         connect_timeout=40, 
         read_timeout=40
@@ -202,14 +201,12 @@ def main():
         .build()
     )
 
-    # হ্যান্ডলার সেটআপ
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("broadcast", broadcast)) # ব্রডকাস্ট যোগ করা হয়েছে
+    app.add_handler(CommandHandler("broadcast", broadcast))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন অ্যাডমিন প্যানেল এবং ক্লিন মোডে চালু আছে ---")
+    print("--- বট এখন MongoDB এবং অ্যাডমিন প্যানেলসহ লাইভ! ---")
     
-    # পোলিং শুরু
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == '__main__':
