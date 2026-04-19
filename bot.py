@@ -3,16 +3,16 @@ import logging
 from flask import Flask
 from threading import Thread
 from dotenv import load_dotenv
-from pymongo import MongoClient  # MongoDB লাইব্রেরি
+from pymongo import MongoClient  # MongoDB লাইব্রেরি যোগ করা হয়েছে
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, MenuButtonWebApp
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from telegram.request import HTTPXRequest
 
 # ===================================================
-# 🚀 LINK & ADMIN SETTINGS (সবকিছু এখানে ঠিক আছে)
+# 🚀 LINK & ADMIN SETTINGS (তোর দেওয়া সব লিংক এখানে আছে)
 # ===================================================
 
-# তোর নিজের টেলিগ্রাম আইডি
+# তোর নিজের টেলিগ্রাম আইডি (অ্যাডমিন প্যানেল এক্সেস করার জন্য)
 ADMIN_ID = 7657544184 
 
 # ১. ভিডিও ১ (HD) এর লিংক:
@@ -37,11 +37,10 @@ load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 MONGO_URI = os.getenv("MONGO_URI")
 
-# MongoDB কানেকশন
+# MongoDB কানেকশন সেটআপ
 client = MongoClient(MONGO_URI)
 db = client['viral_bot_db']
 users_collection = db['users']
-
 # ===================================================
 
 # --- Render-এর জন্য Flask Server ---
@@ -49,7 +48,7 @@ server = Flask('')
 
 @server.route('/')
 def home():
-    return "বট অনলাইনে আছে এবং ডেটাবেস কানেক্টেড! 🚀"
+    return "বট অনলাইনে আছে এবং ডাটাবেস কানেক্টেড! 🚀"
 
 def run():
     port = int(os.environ.get('PORT', 8080))
@@ -76,7 +75,7 @@ def save_user(user_id, first_name):
 
 # --- /start কমান্ড হ্যান্ডলার ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # ব্রডকাস্টের জন্য ইউজার ডাটাবেসে সেভ করা হচ্ছে
+    # ব্রডকাস্টের জন্য ইউজার আইডি ডাটাবেসে সেভ করা হচ্ছে
     user = update.effective_user
     save_user(user.id, user.first_name)
     
@@ -104,6 +103,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "বামের 'Watch Video' বাটনে ক্লিক করুন।"
     )
     
+    # বাটন গ্রিড
     keyboard = [
         [
             InlineKeyboardButton("🎬 ভিডিও ১ (HD)", callback_data='video_1'),
@@ -122,6 +122,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --- ব্রডকাস্ট কমান্ড (MongoDB থেকে আইডি নিয়ে) ---
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # অ্যাডমিন ভেরিফিকেশন
     if update.effective_user.id != ADMIN_ID:
         await update.message.reply_text("❌ দুঃখিত, এই কমান্ডটি শুধুমাত্র অ্যাডমিনের জন্য।")
         return
@@ -148,7 +149,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             await context.bot.send_message(
                 chat_id=user_doc['user_id'], 
-                text=f"📢 *অফিশিয়াল ঘোষণা:*\n\n{message_to_send}", 
+                text=f"📢 *অফিশিয়াল ঘোষণা:*\n\n{message_to_send}", 
                 parse_mode='Markdown'
             )
             success += 1
@@ -162,6 +163,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
+    # ডাটা অনুযায়ী সঠিক লিংকটি বেছে নেওয়া
     links = {
         'video_1': VIDEO_1_HD,
         'video_2': VIDEO_2_4K,
@@ -177,7 +179,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response_text = (
             "✅ *আপনার ভিডিও লিংকটি রেডি!*\n\n"
             "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনে ক্লিক করুন। "
-            "অ্যাড পেজটি আসার পর কয়েক সেকেন্ড অপেক্ষা করে 'Continue' বা 'Get Link' বাটনে ক্লিক করুন।"
+            "অ্যাড পেজটি আসার পর কয়েক সেকেন্ড অপেক্ষা করে 'Continue' বা 'Get Link' বাটনে ক্লিক করুন।"
         )
         
         await query.message.reply_text(
@@ -187,8 +189,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 def main():
+    # ডামি সার্ভার চালু রাখা
     keep_alive()
 
+    # টাইম-আউট কনফিগারেশন
     request_config = HTTPXRequest(
         connect_timeout=40, 
         read_timeout=40
@@ -201,12 +205,14 @@ def main():
         .build()
     )
 
+    # হ্যান্ডলার সেটআপ
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("broadcast", broadcast))
+    app.add_handler(CommandHandler("broadcast", broadcast)) # ব্রডকাস্ট যোগ করা হয়েছে
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("--- বট এখন MongoDB এবং অ্যাডমিন প্যানেলসহ লাইভ! ---")
+    print("--- বট এখন অ্যাডমিন প্যানেল এবং MongoDB মোডে চালু আছে ---")
     
+    # পোলিং শুরু
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == '__main__':
