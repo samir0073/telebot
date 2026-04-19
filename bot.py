@@ -9,7 +9,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 from telegram.request import HTTPXRequest
 
 # ===================================================
-# 🚀 LINK & ADMIN SETTINGS (তোর দেওয়া সব লিঙ্ক ও সেটিংস অক্ষুণ্ণ আছে)
+# 🚀 LINK & ADMIN SETTINGS (তোর দেওয়া সব লিঙ্ক ও সেটিংস অক্ষুণ্ণ আছে)
 # ===================================================
 
 # তোর নিজের টেলিগ্রাম আইডি (অ্যাডমিন প্যানেল এক্সেস করার জন্য)
@@ -37,7 +37,7 @@ load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 MONGO_URI = os.getenv("MONGO_URI")
 
-# MongoDB কানেকশন সেটআপ (Timeout বাড়ানো হয়েছে যাতে এরর না আসে)
+# MongoDB কানেকশন সেটআপ (Timeout বাড়ানো হয়েছে যাতে এরর না আসে)
 try:
     client = MongoClient(
         MONGO_URI, 
@@ -134,7 +134,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ইউজার আইডি ডাটাবেসে সেভ করা
     save_user(user.id, user_name)
 
-# --- ব্রডকাস্ট কমান্ড (MongoDB থেকে আইডি নিয়ে) ---
+# --- ব্রডকাস্ট কমান্ড (MongoDB থেকে আইডি নিয়ে) ---
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         await update.message.reply_text("❌ দুঃখিত, এই কমান্ডটি শুধুমাত্র অ্যাডমিনের জন্য।")
@@ -147,7 +147,8 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_to_send = " ".join(context.args)
     
     try:
-        # ডাটাবেস থেকে সব ইউজার খুঁজে বের করা
+        # ডাটাবেস থেকে সব ইউজার খুঁজে বের করা (কানেকশন সচল আছে কি না তা আগে চেক করবে)
+        client.admin.command('ping') 
         all_users = list(users_collection.find({}))
     except Exception as e:
         logging.error(f"Broadcast Find Error: {e}")
@@ -155,7 +156,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     if not all_users:
-        await update.message.reply_text("❌ কোনো ইউজার খুঁজে পাওয়া যায়নি!")
+        await update.message.reply_text("❌ কোনো ইউজার খুঁজে পাওয়া যায়নি!")
         return
 
     success = 0
@@ -166,7 +167,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             await context.bot.send_message(
                 chat_id=user_doc['user_id'], 
-                text=f"📢 *অফিশিয়াল ঘোষণা:*\n\n{message_to_send}", 
+                text=f"📢 *অফিশিয়াল ঘোষণা:*\n\n{message_to_send}", 
                 parse_mode='Markdown'
             )
             success += 1
@@ -193,7 +194,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response_text = (
             "✅ *আপনার ভিডিও লিংকটি রেডি!*\n\n"
             "💡 *নির্দেশনা:* ভিডিওটি দেখতে নিচের বাটনে ক্লিক করুন। "
-            "অ্যাড পেজটি আসার পর কয়েক সেকেন্ড অপেক্ষা করে 'Continue' বা 'Get Link' বাটনে ক্লিক করুন।"
+            "অ্যাড পেজটি আসার পর কয়েক সেকেন্ড অপেক্ষা করে 'Continue' বা 'Get Link' বাটনে ক্লিক করুন।"
         )
         await query.message.reply_text(response_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
